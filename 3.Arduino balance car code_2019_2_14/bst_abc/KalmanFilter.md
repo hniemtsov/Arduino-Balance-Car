@@ -27,3 +27,10 @@ $$
 \dot{q}_{bias}= 0
 \end{cases}
 $$
+
+$$Q=\begin{pmatrix}Q_{angle} & 0 \\
+0 & Q_{gyro}\end{pmatrix}$$
+
+Measurement equation: $$z=Cx+v$$ , where $$C$$ is the measurement matrix
+
+$$C = \begin{bmatrix}C_0 & 0\end{bmatrix}$$
