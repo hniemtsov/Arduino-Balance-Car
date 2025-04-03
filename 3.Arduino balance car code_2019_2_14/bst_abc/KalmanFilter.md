@@ -62,3 +62,25 @@ Pdot[2] = - P[1][1];
 Pdot[3] = Q_gyro;
 ```
 
+1. `Pdot[0]`:
+   - `Pdot[0] = Q_angle - P[0][1] - P[1][0];`
+   - This corresponds to the change in the top-left element of the covariance matrix. In the continuous case, it would be related to the system's process noise and any dependencies between state variables (like how angle and bias are related). The `Q_angle` term represents the process noise for the angle, and the subtraction of `P[0][1]` and `P[1][0]` represents the influence of the off-diagonal terms (the covariance between the angle and bias).
+
+2. `Pdot[1]` and ` Pdot[2]`:
+   - `Pdot[1] = - P[1][1];`
+   - `Pdot[2] = - P[1][1];`
+   - These terms represent the rate of change of the off-diagonal elements in the covariance matrix. They are influenced by the noise in the gyro (angular velocity), which is described by `Q_gyro`. The negative sign indicates that the covariance between the angle and bias is decreasing due to the system dynamics.
+
+4. `Pdot[3]`:
+   - `Pdot[3] = Q_gyro;`
+   - This is the change in the bottom-right element of the covariance matrix. This term corresponds to the process noise for the gyro, which is the uncertainty in the gyro's measurements.
+
+#### Interpretation in Kalman Filter Equations
+In the Kalman filter, we compute the Kalman gain $$K$$ using the measurement uncertainty:
+
+$$E = R + CPC^T$$
+
+,where:
+- $$R$$ is the **measurement noise covariance**
+- $$C$$ is the **measurement matrix** (or just a scalar $$C_0$$ in our case)
+- $$P$$ is the **error covariance matrix**
