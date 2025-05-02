@@ -16,3 +16,51 @@ $$x(t+dt) = x(t) + x'(t)dt + x''\frac{dt^2}{2} + O(dt^3)$$
 🔍 For beginners, this perspective can be powerful: even if your data isn’t related to position or velocity, you can still derive Kalman-style state equations just by assuming the signal is smooth.
 
 This reframing makes filtering accessible across domains — from IoT sensor data to biomedical signals to financial trends.
+
+## The Discrete Linear Kalman Filter
+
+The **state vector** is:
+
+$$x_k=\\begin{bmatrix}
+\theta \\ 
+\omega
+\end{bmatrix}\_{t+dt}$$
+
+**The system model** (how the state evolves over time) is:
+
+$$\begin{bmatrix}
+\theta \\ 
+\omega
+\end{bmatrix}\_{t+dt}=\begin{pmatrix}1 & dt \\
+0 & 1\end{pmatrix}\begin{bmatrix}
+\theta \\ 
+\omega
+\end{bmatrix}\_{t}+\begin{bmatrix}
+\frac{1}{2}{dt}^2 \\ 
+dt
+\end{bmatrix}{\alpha}(t)
+$$
+
+or
+
+$$
+\begin{cases}
+\theta(t+dt) = \theta(t) + \omega(t) \cdot dt + \alpha(t) \cdot \frac{{dt}^2}{2}\\
+\omega(t+dt) = \omega(t) + \alpha(t) \cdot dt
+\end{cases}
+$$
+
+where
+
+- $$\theta(t)$$ is the angle.
+- $$\omega(t) = {\theta}'$$ is the anglular velosity
+- $$\alpha(t) = {\theta}''$$ is the acceleration
+
+so that 
+
+$$x_k=F\x_{k-1}+w_k$$
+
+$$Q=\begin{pmatrix}Q_{angle} & 0 \\
+0 & Q_{gyro}\end{pmatrix}$$
+
+Measurement equation: $$z=Cx+v$$ , where $$C$$ is the measurement matrix
