@@ -64,12 +64,10 @@ where
 
 $$F=
 \begin{pmatrix}1 & dt \\
- 0 & 1\end{pmatrix}$$
-
-$$G = \begin{pmatrix}\frac{1}{2}{dt}^2 \\
+ 0 & 1\end{pmatrix}  \quad     G = \begin{pmatrix}\frac{1}{2}{dt}^2 \\
  dt\end{pmatrix}$$
  
- $$Q=\begin{pmatrix}Q_{angle} & 0 \\
- 0 & Q_{gyro}\end{pmatrix}$$
+ $$Ga_k \sim N(0,Q), \quad Q=GG^T{\sigma}_a^2=\begin{pmatrix}\frac{1}{4}{dt}^4 & \frac{1}{2}{dt}^3 \\
+ \frac{1}{2}{dt}^3 & {dt}^2\end{pmatrix}$$
  
  Measurement equation: $$z=Hx+v$$ , where $$H$$ is the Identity 2x2 matrix.
