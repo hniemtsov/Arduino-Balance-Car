@@ -109,3 +109,65 @@ The 1st term $$FP_{k-1}^+F^T$$ does not change the amount of the uncertainty, it
 #### 2. Update step
 
 Measurement model (equation): $$z_k=Hx_k+v$$ , where $$H$$ is the Identity 2x2 matrix.
+
+Innovation $$y_k=z_k-Hx_k^-$$ , where $$Hx_k^-$$ is the predicted measurement vector.
+
+```cpp
+     // Innovation
+    float y1 = angle_m - Xp1;
+    float y2 = gyro_m  - Xp2;
+```
+
+The updated (a posteriori) state estimate denoted as $$x_k^+$$, is a predicted step corrected with Kalman gain vector $$K_k$$:
+
+$$x_k^+ = x_k^- + K_ky_k$$
+
+```cpp
+    // Updates states;
+    Xu1  = Xp1;
+    Xu1 += K11*y1 + K12*y2;
+    Xu2  = Xp2;
+    Xu2 += K21*y1 + K22*y2;
+
+    return Xu1;
+```
+
+The Kalman Gain $$K_k$$ decides **how much to trust the measurement vs prediction**. 
+
+$$K_k=P_k^-H_k^TS_k^{-1}$$
+
+```cpp
+    // Computing Gains K = Pp*H'*invS = Pp*invS;
+    float K11 = (Pp11 * invS11 + Pp12 *invS21)*invDetS; float K12 = (Pp11 * invS12 + Pp12 *invS22)*invDetS;
+    float K21 = (Pp21 * invS11 + Pp22 *invS12)*invDetS; float K22 = (Pp21 * invS12 + Pp22 *invS22)*invDetS;
+```
+
+It depends on how many uncertainty in Gaussian *pdf* of $$y_k$$ (Innovation covariance) $$S_k$$:
+
+$$S_k=HP_k^-H^T+R_k$$
+
+where $$R_k$$ is measurement noise covariance matrix $$R=E[v_kv_k^T]$$:
+
+$$R=E[v_kv_k^T] \quad = \quad \begin{pmatrix} \sigma_\theta^2 & 0 \\
+ 0 & \sigma_\omega^2\end{pmatrix}$$
+
+- Higher R ⇒ trust model more, measurement less.
+- Lower R ⇒ trust measurement more.
+
+```cpp
+    // Measurement eq z = H*x + v, where H=Identity 2x2 matrix
+    // Innovation cov Sk = H*Pp*H' + R, where R = E(v*v') = [[varAngle, 0], [0, varAngVelocity]] <-- diagonal matrix with variances of measurement noise
+    float invS22 =  Pp11 + varAngle;  float invS21 = -Pp12;
+    float invS12 = -Pp21;             float invS11 =  Pp22 + varAngVelocity;
+    float invDetS = 1.0/(invS22*invS11 - invS12*invS21);
+```
+
+The covariance (a posteriory) update equation is:
+
+$$P_k^+=(I-K_kH_k)P_k^-$$
+
+```cpp
+    // Updated covariance Pu = (I - KH)*Pp = (I-K)*Pp
+    Pu11 = (1-K11)*Pp11-K12*Pp21;  Pu12 = (1-K11)*Pp12-K12*Pp22; 
+    Pu21 = -K21*Pp11+(1-K22)*Pp21; Pu22 = -K21*Pp12+(1-K22)*Pp22;
+```
