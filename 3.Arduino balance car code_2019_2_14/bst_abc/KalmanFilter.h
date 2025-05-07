@@ -14,6 +14,7 @@ In order to  avoid Infringement Act,this core is not for the commerce except bei
 #include <WProgram.h>
 #endif
 
+#include "LinearKalmanFilter.h"
 
 class KalmanFilter
 {
@@ -24,7 +25,7 @@ public:
 									float R_angle,float C_0,float K1);
   float Gyro_x,Gyro_y,Gyro_z;
   float accelz = 0;
-  float angle;
+  float angle = 0;
   float angle6;
 private:
 	float angle_err,q_bias;
@@ -33,6 +34,7 @@ private:
 	float  PCt_0, PCt_1, E, K_0, K_1, t_0, t_1;
 	float angle_dot;                               
 	
+  LinearKalmanFilter myfilter;
 };
 #endif
 //
