@@ -56,7 +56,8 @@ void KalmanFilter::Angletest(int16_t ax,int16_t ay,int16_t az,int16_t gx,int16_t
   //ƽ�����
   float Angle = atan2(ay , az) * 57.3;           //�Ƕȼ��㹫ʽ,Angle:һ�׻����˲��������С��������б�Ƕ�
   Gyro_x = (gx - 128.1) / 131;              //�Ƕ�ת��
-  Kalman_Filter(Angle, Gyro_x, dt, Q_angle, Q_gyro,R_angle,C_0);            //�����˲�
+  //Kalman_Filter(Angle, Gyro_x, dt, Q_angle, Q_gyro,R_angle,C_0);            //�����˲�
+  angle = myfilter.filter(Angle, Gyro_x, dt, Q_angle, Q_gyro,R_angle,C_0);
   //��ת�Ƕ�Z�����
   if (gz > 32768) gz -= 65536;              //ǿ��ת��2g  1g
   Gyro_z = -gz / 131;                      //Z�����ת��

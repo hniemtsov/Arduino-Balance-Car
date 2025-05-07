@@ -313,6 +313,7 @@ void setup() {
   delay(1500);
   mpu.initialize();                       //Initialize MPU6050
   delay(2);
+
   balancecar.pwm1 = 0;
   balancecar.pwm2 = 0;
   
@@ -359,6 +360,14 @@ float voltage_test()
 }
 // === ===
 void loop() {
+  //Serial.print("ax: "); Serial.print(ax);
+ // Serial.print(", ay: "); Serial.print(ay);
+  //Serial.print(""); 
+  Serial.println(kalmanfilter.angle);
+  delay(100); // Delay to avoid flooding Serial Monitor
+}
+
+void loop2() {
   Voltage=voltage_test();
   //Serial.print(Voltage,DEC);
  // Serial.print("\r\n");
