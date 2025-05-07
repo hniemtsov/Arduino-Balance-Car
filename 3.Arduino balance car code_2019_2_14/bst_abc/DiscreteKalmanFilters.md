@@ -58,9 +58,18 @@
  
  so that 
  
- $$x_k=F\x_{k-1}+w_k$$
+ $$x_k=Fx_{k-1}+Ga_k$$
+
+where
+
+$$F=
+\begin{pmatrix}1 & dt \\
+ 0 & 1\end{pmatrix}$$
+
+$$G = \begin{pmatrix}\frac{1}{2}{dt}^2 \\
+ dt\end{pmatrix}$$
  
  $$Q=\begin{pmatrix}Q_{angle} & 0 \\
  0 & Q_{gyro}\end{pmatrix}$$
  
- Measurement equation: $$z=Cx+v$$ , where $$C$$ is the measurement matrix
+ Measurement equation: $$z=Hx+v$$ , where $$H$$ is the Identity 2x2 matrix.
