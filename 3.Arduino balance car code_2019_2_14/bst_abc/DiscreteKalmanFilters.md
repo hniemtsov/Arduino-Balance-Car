@@ -69,5 +69,43 @@ $$F=
  
  $$Ga_k \sim N(0,Q), \quad Q=GG^T{\sigma}_a^2=\begin{pmatrix}\frac{1}{4}{dt}^4 & \frac{1}{2}{dt}^3 \\
  \frac{1}{2}{dt}^3 & {dt}^2\end{pmatrix}$$
+
+ Q matrix is a process noise covariance matrix, which models the uncertainty or randomness in the system dynamics. It accounts for things like:
+- Unmodeled dynamics (e.g., friction, flexing parts)
+- External disturbances (e.g., wind, vibration)
+- Approximation errors (e.g., linearization)
  
- Measurement equation: $$z=Hx+v$$ , where $$H$$ is the Identity 2x2 matrix.
+Kalman filtering contains 2 steps: **Predict step** and **Update step** for states and covariance matrixes.
+#### 1. Predict step
+The predicted (a priori) state estimate, denoted as $$x^-$$, is the state forecasted from the previous time step using the system model, before the current measurement update.
+
+$$x_k^-=Fx_{k-1}^+$$
+
+The predicted covariance estimate is:
+
+$$P_k^- = FP_{k-1}^+F^T + Q_{k-1}$$ 
+
+The 1st term $$FP_{k-1}^+F^T$$ does not change the amount of the uncertainty, it just shifts it between the states.
+
+```cpp
+    // Predicted state x(k|k-1) = F*x(k-1|k-1)  
+    float Xp1  = Xu1 + dt*Xu2;
+    float Xp2 =           Xu2;
+ 
+    // Predicted covariance P(k|k-1) = F*P(k-1|k-1)*F' + G*Q*G'
+    // 1st term: F*P(k-1|k-1)*F
+    // Pp := P(k|k-1)    <-- predicted cov
+    // Pu := P(k-1|k-1)  <-- updated cov
+    // Q  := varA := stdA*stdA - variance of angular acceleration
+    //        ⌈ 0.5*dt*dt ⌉
+    //  G :=  ⌊     dt    ⌋
+    float Pp11 = Pu11 + (Pu12+Pu21)*dt + Pu22*dt2;    float Pp12 = Pu12 + Pu22*dt;
+    float Pp21 = Pu21 + Pu22*dt;                      float Pp22 = Pu22;                       
+
+    // 2nd term: G*Q*G'
+    Pp11 += dt4*0.25*varA;   Pp12 += dt3*0.5*varA;
+    Pp21 += dt3*0.5*varA;    Pp22 += dt2*varA;
+```
+#### 2. Update step
+
+Measurement model (equation): $$z_k=Hx_k+v$$ , where $$H$$ is the Identity 2x2 matrix.
