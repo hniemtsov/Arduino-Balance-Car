@@ -1,6 +1,6 @@
-#include "LinearKalmanFilter.h"
+#include "ExtendedKalmanFilter.h"
 
-float LinearKalmanFilter::filter(double angle_m, double gyro_m,float dt,float Q_angle,float Q_gyro,float R_angle,float C_0)
+float ExtendedKalmanFilter::filter(double tan_of_angle_m, double gyro_m,float dt,float Q_angle,float Q_gyro,float R_angle,float C_0)
 {
     // Predicted state x(k|k-1) = F*x(k-1|k-1)  
     float Xp1  = Xu1 + dt*Xu2;
@@ -21,22 +21,23 @@ float LinearKalmanFilter::filter(double angle_m, double gyro_m,float dt,float Q_
     Pp21 += dt3*0.5*varA;    Pp22 += dt2*varA;                      
 
     // Innovation
-    float y1 = angle_m - Xp1;
+    float y1 = tan_of_angle_m - Xp1;
     float y2 = gyro_m  - Xp2;
 
-    // Measurement eq z = H*x + v, where H=Identity 2x2 matrix
+    // Measurement eq z = H*x + v, where H = [[dh, 0], [0, 1]]   2x2 matrix
     // Innovation cov Sk = H*Pp*H' + R, where R = E(v*v') = [[varAngle, 0], [0, varAngVelocity]] <-- diagonal matrix with variances of measurement noise
-    float invS22 =  Pp11 + varAngle;  float invS21 = -Pp12;
-    float invS12 = -Pp21;             float invS11 =  Pp22 + varAngVelocity;
+    float dh = 1 + tan_of_angle_m*tan_of_angle_m;
+    float invS22 =  Pp11*dh + varAngle;  float invS21 = -Pp12*dh;
+    float invS12 = -Pp21*dh;             float invS11 =  Pp22 + varAngVelocity;
     float invDetS = 1.0/(invS22*invS11 - invS12*invS21);
     
     // Computing Gains K = Pp*H'*invS = Pp*invS;
-    float K11 = (Pp11 * invS11 + Pp12 *invS21)*invDetS; float K12 = (Pp11 * invS12 + Pp12 *invS22)*invDetS;
-    float K21 = (Pp21 * invS11 + Pp22 *invS12)*invDetS; float K22 = (Pp21 * invS12 + Pp22 *invS22)*invDetS;
+    float K11 = (Pp11 * dh * invS11 + Pp12 *invS21)*invDetS; float K12 = (Pp11 * dh * invS12 + Pp12 *invS22)*invDetS;
+    float K21 = (Pp21 * dh * invS11 + Pp22 *invS12)*invDetS; float K22 = (Pp21 * dh * invS12 + Pp22 *invS22)*invDetS;
 
     // Updated covariance Pu = (I - KH)*Pp = (I-K)*Pp
-    Pu11 = (1-K11)*Pp11-K12*Pp21;  Pu12 = (1-K11)*Pp12-K12*Pp22; 
-    Pu21 = -K21*Pp11+(1-K22)*Pp21; Pu22 = -K21*Pp12+(1-K22)*Pp22;
+    Pu11 = (1-K11*dh)*Pp11-K12*Pp21;  Pu12 = (1-K11*dh)*Pp12-K12*Pp22; 
+    Pu21 = -K21*dh*Pp11+(1-K22)*Pp21; Pu22 = -K21*dh*Pp12+(1-K22)*Pp22;
 
     // Updates states;
     Xu1  = Xp1;

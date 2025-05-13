@@ -14,7 +14,8 @@ In order to  avoid Infringement Act,this core is not for the commerce except bei
 #include <WProgram.h>
 #endif
 
-#include "KalmanFilter2.h"
+#include "LinearKalmanFilter.h"
+#include "ExtendedKalmanFilter.h"
 
 class KalmanFilter
 {
@@ -34,7 +35,8 @@ private:
 	float  PCt_0, PCt_1, E, K_0, K_1, t_0, t_1;
 	float angle_dot;                               
 	
-  KalmanFilter2 myfilter;
+  LinearKalmanFilter myfilter;
+  ExtendedKalmanFilter ekf;
 };
 #endif
 //
