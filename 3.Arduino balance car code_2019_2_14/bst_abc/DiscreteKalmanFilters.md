@@ -171,3 +171,30 @@ $$P_k^+=(I-K_kH_k)P_k^-$$
     Pu11 = (1-K11)*Pp11-K12*Pp21;  Pu12 = (1-K11)*Pp12-K12*Pp22; 
     Pu21 = -K21*Pp11+(1-K22)*Pp21; Pu22 = -K21*Pp12+(1-K22)*Pp22;
 ```
+
+## Extended Kalman Filter
+The MPU-6050 does not directly provide the tilt angle $$\theta$$, instead, it outputs linear acceleration in the $$xOz$$ plane. From these values, the tilt angle is commonly estimated using the arctangent of the ratio of accelerometer components:
+
+$$\theta = atctan(\frac{a_x}{a_z})$$
+
+In many basic Kalman filter implementations, this angle is computed externally (e.g., using atan2) and used directly in the update step, assuming it was measured.
+
+```cpp
+float Angle = atan2(ay , az) * 57.3; 
+```
+However, in reality, what the MPU-6050 provides is proportional to $$tg(\theta)$$, not $$\theta$$ itself. This distinction becomes important when building a more accurate model. To account for this, we can incorporate the true physical relationship directly into the **measurement model** of an **Extended Kalman Filter (EKF)**:
+
+$$vec{z}_k=\begin{pmatrix} tg(\theta_k) \\
+ \omega_k \end{pmatrix} + \vec{v}_k$$
+
+Since $$tg(\theta)$$ is a nonlinear function, we use the EKF, which linearizes the measurement function around the current estimate. The Jacobian of this function, used in the EKF update step, becomes:
+
+$$H_k=\frac{\partial h}{\partial x} = \begin{pmatrix} \sec^2(\theta_k) & 0\\
+0 & 1 \end{pmatrix}$$
+
+This matrix $$H_k$$ changes at every time step depending on the current estimate of $$\theta_k$$, unlike in a standard Kalman Filter where $$H$$ is constant.
+
+👉 This approach makes practical sense, especially in systems like self-balancing robots or inverted pendulums, which operate within a limited tilt range, typically around $$\pm30^\circ$$. Within this range, $$tg(\theta)$$ is well-behaved and numerically stable, making it feasible to use directly in the measurement model without introducing instability or divergence.
+
+
+
