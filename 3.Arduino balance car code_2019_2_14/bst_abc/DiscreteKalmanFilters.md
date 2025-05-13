@@ -173,9 +173,9 @@ $$P_k^+=(I-K_kH_k)P_k^-$$
 ```
 
 ## Extended Kalman Filter
-The MPU-6050 does not directly provide the tilt angle $$\theta$$, instead, it outputs linear acceleration in the $$xOz$$ plane. From these values, the tilt angle is commonly estimated using the arctangent of the ratio of accelerometer components:
+The MPU-6050 does not directly provide the tilt angle $$\theta$$, instead, it outputs linear acceleration in the $$yOz$$ plane. From these values, the tilt angle is commonly estimated using the arctangent of the ratio of accelerometer components:
 
-$$\theta = atctan(\frac{a_x}{a_z})$$
+$$\theta = atctan(\frac{a_y}{a_z})$$
 
 In many basic Kalman filter implementations, this angle is computed externally (e.g., using atan2) and used directly in the update step, assuming it was measured.
 
@@ -184,7 +184,7 @@ float Angle = atan2(ay , az) * 57.3;
 ```
 However, in reality, what the MPU-6050 provides is proportional to $$tg(\theta)$$, not $$\theta$$ itself. This distinction becomes important when building a more accurate model. To account for this, we can incorporate the true physical relationship directly into the **measurement model** of an **Extended Kalman Filter (EKF)**:
 
-$$vec{z}_k=\begin{pmatrix} tg(\theta_k) \\
+$$\vec{z}_k=\begin{pmatrix} tg(\theta_k) \\
  \omega_k \end{pmatrix} + \vec{v}_k$$
 
 Since $$tg(\theta)$$ is a nonlinear function, we use the EKF, which linearizes the measurement function around the current estimate. The Jacobian of this function, used in the EKF update step, becomes:
