@@ -120,7 +120,7 @@ int spinl = 0;//Left rotation sign
 int spinr = 0;//Right rotation sign
 int bluetoothvalue;//Bluetooth control
 /////////////////////////////////
-
+int oneTime = 100;
 ////////////////////////////////////
 
 int chaoshengbo = 0;
@@ -197,7 +197,12 @@ void inter()
   sei();
   countpluse();                                     //Pulse superposition subfunction
   mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);     //IIC acquires six-axis data of MPU6050 ax ay az gx gy gz
-  kalmanfilter.Angletest(ax, ay, az, gx, gy, gz, dt, Q_angle, Q_gyro, R_angle, C_0, K1);                                   
+  //if (oneTime==100)
+  {
+  kalmanfilter.Angletest(ax, ay, az, gx, gy, gz, dt, Q_angle, Q_gyro, R_angle, C_0, K1);
+  //oneTime--;
+  }
+                                     
   angleout();                                       // Angle loop control
 
   speedcc++;
@@ -360,10 +365,31 @@ float voltage_test()
 }
 // === ===
 void loop() {
-  //Serial.print("ax: "); Serial.print(ax);
- // Serial.print(", ay: "); Serial.print(ay);
-  //Serial.print(""); 
-  Serial.println(kalmanfilter.angle);
+/*
+Serial.print("oneTime: "); Serial.print(oneTime);
+  Serial.print("ay: "); Serial.print(ay);
+  Serial.print(", az: "); Serial.print(az);
+
+  Serial.print(", ay/az: "); Serial.print(((float)ay)/az);
+  
+  
+    Serial.print(", i: "); Serial.print(kalmanfilter.ekf.invDetS);
+     Serial.print(", i11: "); Serial.print(kalmanfilter.ekf.invS11);
+      Serial.print(", i22: "); Serial.print(kalmanfilter.ekf.invS22);
+      Serial.print(", i12: "); Serial.print(kalmanfilter.ekf.invS12);
+      Serial.print(", i21: "); Serial.print(kalmanfilter.ekf.invS21);
+         Serial.print(", det: "); Serial.print(1.0/(0.01*0.01));
+    Serial.print(", dh: "); Serial.print(kalmanfilter.ekf.dh);
+    Serial.print(", y1: "); Serial.print(kalmanfilter.ekf.y1);
+    Serial.print(", y2: "); Serial.print(kalmanfilter.ekf.y2);
+    Serial.print(", Xp1: "); Serial.print(kalmanfilter.ekf.Xp1);
+    Serial.print(", Xp2: "); Serial.print(kalmanfilter.ekf.Xp2);*/
+    //Serial.print(", tmp: "); Serial.print(kalmanfilter.ekf.Xu2);
+    
+   //Serial.print(" "); Serial.println((kalmanfilter.ekf.Xu1*57.3));
+   //Serial.print(" "); Serial.print(kalmanfilter.myfilter.Xu1);
+   //Serial.print(" "); Serial.println(kalmanfilter.myfilter.Xu1);
+   Serial.print(" "); Serial.println(atan(kalmanfilter.ekf_tg.Xu1)*57.3);
   delay(100); // Delay to avoid flooding Serial Monitor
 }
 

@@ -16,6 +16,8 @@ In order to  avoid Infringement Act,this core is not for the commerce except bei
 
 #include "LinearKalmanFilter.h"
 #include "ExtendedKalmanFilter.h"
+#include "LKF_1d.h"
+#include "EKF_tg.h"
 
 class KalmanFilter
 {
@@ -34,9 +36,11 @@ private:
 	float P[2][2] = {{ 1, 0 }, { 0, 1 }};
 	float  PCt_0, PCt_1, E, K_0, K_1, t_0, t_1;
 	float angle_dot;                               
-	
+public:	
   LinearKalmanFilter myfilter;
   ExtendedKalmanFilter ekf;
+  LKF_1d lkf_1d;
+  EKF_tg ekf_tg;
 };
 #endif
 //
