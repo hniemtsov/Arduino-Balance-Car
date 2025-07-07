@@ -26,15 +26,15 @@ public:
 						int f,int b,float accelz,int Pin1,int Pin2,int Pin3,int Pin4,int PinPWMA,int PinPWMB);
 	int pulseright = 0;
 	int pulseleft = 0;
-	int posture=0;
+	int posture=0; // gnem: not used
 	int stopl = 0;
 	int stopr = 0;
 	double angleoutput=0,pwm1 = 0, pwm2 = 0;
 private:
-	float speeds_filterold;//�ٶ��˲�
-	float positions;//λ��
-	int turnmax = 0;                                    //��ת�����ֵ
-	int turnmin = 0;                                  //��ת�����ֵ
+	float speeds_filterold;//ËÙ¶ÈÂË²¨
+	float positions;//Î»ÖÃ
+	int turnmax = 0;                                    //Ðý×ªÊä³ö·ùÖµ
+	int turnmin = 0;                                  //Ðý×ªÊä³ö·ùÖµ
 	float turnout = 0;
 	int flag1 = 0;
 	int flag2 = 0;

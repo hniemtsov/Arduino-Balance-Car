@@ -12,8 +12,8 @@ double BalanceCar::speedpiout(double kps,double kis,double kds,int f,int b,doubl
 {
   float speeds = (pulseleft + pulseright) * 1.0;                                                                 //���� ����ֵ
   pulseright = pulseleft = 0;
-  speeds_filterold *= 0.7;                                                                     //һ�׻����˲�
-  float speeds_filter = speeds_filterold + speeds * 0.3;
+                                                                      //һ�׻����˲�
+  float speeds_filter = speeds_filterold * 0.7 + speeds * 0.3;
   speeds_filterold = speeds_filter;
   positions += speeds_filter;
   positions += f;                                                                         //ȫ���������ں�
@@ -110,17 +110,17 @@ void BalanceCar::pwma(double speedoutput,float rotationoutput,float angle,float 
  
 
 
-		  if (angle6 > 10 || angle6 < -10 &turnleftflag == 0 & turnrightflag == 0 & spinleftflag == 0 & spinrightflag == 0 && f == 0 && b == 0)
-  {
-           if(stopl + stopr > 1500||stopl + stopr < -3500)
+if (angle6 > 10 || angle6 < -10 &turnleftflag == 0 & turnrightflag == 0 & spinleftflag == 0 & spinrightflag == 0 && f == 0 && b == 0)
+{
+    if(stopl + stopr > 1500||stopl + stopr < -3500)
    {
     pwm1 = 0;
     pwm2 = 0;
 	flag1=1;
 
 	}
-  }
-  else 
+}
+else 
   {
    stopl=stopr=0;
    flag1=0;
