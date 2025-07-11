@@ -20,18 +20,22 @@ In order to  avoid Infringement Act,this core is not for the commerce except bei
 class BalanceCar
 {
 public:
+void calc_pwms(double& pwm1, double& pwm2, double speedoutput, float rotationoutput);
   double speedpiout(double kps,double kis,double kds,int f,int b,double p0);
   float turnspin(int turnleftflag,int turnrightflag,int spinleftflag,int spinrightflag,double kpturn,double kdturn,float Gyroz);
-  void pwma(double speedoutput,float rotationoutput,float angle,float angle6,int turnleftflag,int turnrightflag,int spinleftflag,int spinrightflag,
-						int f,int b,float accelz,int Pin1,int Pin2,int Pin3,int Pin4,int PinPWMA,int PinPWMB);
-	int pulseright = 0;
-	int pulseleft = 0;
+  
+  void pwma(double& pwm1,double& pwm2,float angle,float angle6,int turnleftflag,int turnrightflag,int spinleftflag,int spinrightflag, int f,int b,float accelz,int Pin1,int Pin2,int Pin3,int Pin4,int PinPWMA,int PinPWMB);
+
+	long pulseright = 0;
+	long pulseleft = 0;
 	int posture=0; // gnem: not used
 	int stopl = 0;
 	int stopr = 0;
-	double angleoutput=0,pwm1 = 0, pwm2 = 0;
+	double angleoutput=0, pwm1 = 0, pwm2 = 0;
+	long sumam;
+	long count_prev = 0;
 private:
-	float speeds_filterold;//ËÙ¶ÈÂË²¨
+	float speeds_filterold = 0;//ËÙ¶ÈÂË²¨
 	float positions;//Î»ÖÃ
 	int turnmax = 0;                                    //Ðý×ªÊä³ö·ùÖµ
 	int turnmin = 0;                                  //Ðý×ªÊä³ö·ùÖµ

@@ -84,13 +84,14 @@ float BalanceCar::turnspin(int turnleftflag,int turnrightflag,int spinleftflag,i
   turnout_put = -turnout * kpturn - Gyroz * kdturn;//��תPD�㷨���� �ں��ٶȺ�Z����ת��λ��
 	return turnout_put;
 }
-
-void BalanceCar::pwma(double speedoutput,float rotationoutput,float angle,float angle6,int turnleftflag,int turnrightflag,int spinleftflag,int spinrightflag,
+void BalanceCar::calc_pwms(double& pwm1, double& pwm2, double speedoutput, float rotationoutput)
+{
+    pwm1 = -angleoutput - speedoutput - rotationoutput; //Left���PWM���ֵ
+    pwm2 = -angleoutput - speedoutput + rotationoutput;//Right���PWM���ֵ
+}
+void BalanceCar::pwma(double& pwm1,double& pwm2, float angle,float angle6,int turnleftflag,int turnrightflag,int spinleftflag,int spinrightflag,
 	int f,int b,float accelz,int Pin1,int Pin2,int Pin3,int Pin4,int PinPWMA,int PinPWMB)
 {
-
-  pwm1 = -angleoutput - speedoutput - rotationoutput; //Left���PWM���ֵ
-  pwm2 = -angleoutput - speedoutput + rotationoutput;//Right���PWM���ֵ
 
   //����ֵ����
   if (pwm1 > 255) pwm1 = 255;
@@ -106,7 +107,7 @@ void BalanceCar::pwma(double speedoutput,float rotationoutput,float angle,float 
     pwm2 = 0;
   }
   //
-
+                      
  
 
 
