@@ -6,10 +6,12 @@
 ****************************************************************************/
 
 
-#include "./PinChangeInt.h"
+//#include "./PinChangeInt.h"
+#include "./PinChangeInterrupt.h"
 #include "./MsTimer2.h"
 //Speed PID is controlled by speed dial counting
 #include "./BalanceCar.h"
+#include "./LQR.h"
 #include "./KalmanFilter.h"
 #include "./I2Cdev.h"
 #include "./MPU6050_6Axis_MotionApps20.h"
@@ -18,6 +20,7 @@
 MPU6050 mpu; //实例化一个 MPU6050 对象，对象名称为 mpu
 BalanceCar balancecar;
 KalmanFilter kalmanfilter;
+LQR lqr;
 int16_t ax, ay, az, gx, gy, gz;
 //TB6612FNG drive module control signal
 #define IN1M 7
@@ -44,16 +47,17 @@ double kp_speed =3.8, ki_speed = 0.11, kd_speed = 0.0;            //The paramete
 double kp_turn = 28, ki_turn = 0, kd_turn = 0.29;                 //Rotate PID settings
 const double PID_Original[6] = {38, 0.0, 0.58,4.0, 0.12, 0.0};    //Restore default PID parameters
 //Rotate PID parameters
-double setp0 = 0, dpwm = 0, dl = 0; //Angle balance point, PWM difference, dead zone，PWM1，PWM2
+double setp0 = 0;// , dpwm = 0, dl = 0; //Angle balance point, PWM difference, dead zone，PWM1，PWM2
 float value;
 
+float aa = 1.0; 
 
 //********************angle data*********************//
 float Q;
 float Angle_ax;      //Tilt angle calculated from acceleration
 float Angle_ay;
 float K1 = 0.05;     //Weighting the value of the accelerometer
-float angle0 = 0.00; //Mechanical balance angle
+float angle0 = 0.7; //Mechanical balance angle
 int slong;
 //********************angle data*********************//
 
@@ -68,9 +72,9 @@ float dt = timeChange * 0.001; //PS：The value of dt is the filter sampling tim
 //******************** speed count ************
 //*********************************************
 
-volatile long count_right = 0;
+volatile char count_right = 0;
 //The volatile long type is used to ensure that the value is valid when the external interrupt pulse count value is used in other functions.
-volatile long count_left = 0;
+volatile char count_left = 0;
 //The volatile long type is used to ensure that the value is valid when the external interrupt pulse count value is used in other functions.
 int speedcc = 0;
 
@@ -79,7 +83,7 @@ int lz = 0;
 int rz = 0;
 int rpluse = 0;
 int lpluse = 0;
-int sumam;
+
 /////////////////////////////////////////////////
 
 /////////////////////////////////////////////
@@ -176,7 +180,7 @@ void countpluse()
   //The number of pulses is superimposed, every 5ms into the interrupt
   balancecar.pulseright += rpluse;
   balancecar.pulseleft += lpluse;
-  sumam = balancecar.pulseright + balancecar.pulseleft;
+  balancecar.sumam = balancecar.pulseright + balancecar.pulseleft; // gnem: not used
 }
 ///////////////////////////////////////////
 
@@ -185,7 +189,7 @@ void countpluse()
 //////////////////////////////////////
 void angleout()
 {
-  balancecar.angleoutput = kp * (kalmanfilter.angle + angle0) + kd * kalmanfilter.Gyro_x;//PD 角度环控制
+    balancecar.angleoutput = kp * (kalmanfilter.angle + angle0) + kd * kalmanfilter.angle_dot;// .Gyro_x;//PD 角度环控制
 }
 //////////////////////////////////////
 
@@ -206,19 +210,34 @@ void inter()
   angleout();                                       // Angle loop control
 
   speedcc++;
-  if (speedcc >= 8)                                //40ms into the speed loop control
+//*
+ // if (speedcc >= 8)                                //40ms into the speed loop control
   {
-    Outputs = balancecar.speedpiout(kp_speed, ki_speed, kd_speed, front, back, setp0);
+ //     lqr.theta_states(balancecar.pulseleft, balancecar.pulseright, kalmanfilter.angle, dt);
+      //  speedcc = 0;
+
+ //     lqr.psi_states(kalmanfilter.angle, kalmanfilter.angle_dot, dt);
+  }
+//  lqr.calc_pwms(balancecar.pwm1, balancecar.pwm2);
+//*/
+
+ 
+ // if (speedcc >= 8)                                //40ms into the speed loop control
+  {
+      Outputs =  balancecar.speedpiout(kp_speed, ki_speed, kd_speed, front, back, setp0);
     speedcc = 0;
   }
   turncount++;
-  if (turncount > 4)                                //40ms into the rotation control
+  if (turncount > 4)                                //40ms into the rotation control // gnem: 20 ms not 40
   {
-    turnoutput = balancecar.turnspin(turnl, turnr, spinl, spinr, kp_turn, kd_turn, kalmanfilter.Gyro_z);                              
+      turnoutput = 0;// balancecar.turnspin(turnl, turnr, spinl, spinr, kp_turn, kd_turn, kalmanfilter.Gyro_z);
     turncount = 0;
   }
-  balancecar.posture++;
-  balancecar.pwma(Outputs, turnoutput, kalmanfilter.angle, kalmanfilter.angle6, turnl, turnr, spinl, spinr, front, back, kalmanfilter.accelz, IN1M, IN2M, IN3M, IN4M, PWMA, PWMB);                            //小车总PWM输出
+  //balancecar.posture++; gnem: Not used
+  balancecar.calc_pwms(balancecar.pwm1, balancecar.pwm2, Outputs, turnoutput);
+  balancecar.pwm1 = aa * balancecar.pwm1;
+  balancecar.pwm2 = aa * balancecar.pwm2;
+  balancecar.pwma(balancecar.pwm1, balancecar.pwm2, kalmanfilter.angle, kalmanfilter.angle6, turnl, turnr, spinl, spinr, front, back, kalmanfilter.accelz, IN1M, IN2M, IN3M, IN4M, PWMA, PWMB);                            //小车总PWM输出
  
 }
 //////////////////////////////////////////////////////////
@@ -328,6 +347,8 @@ void setup() {
   MsTimer2::set(5, inter);
   MsTimer2::start();
 
+  attachInterrupt(0, Code_left, CHANGE);
+attachPCINT(digitalPinToPCINT(PinA_right), Code_right, CHANGE);
 }
 
 ////////////////////////////////////////turn//////////////////////////////////
@@ -387,9 +408,13 @@ Serial.print("oneTime: "); Serial.print(oneTime);
     //Serial.print(", tmp: "); Serial.print(kalmanfilter.ekf.Xu2);
     
    //Serial.print(" "); Serial.println((kalmanfilter.ekf.Xu1*57.3));
-   //Serial.print(" "); Serial.print(kalmanfilter.myfilter.Xu1);
-   //Serial.print(" "); Serial.println(kalmanfilter.myfilter.Xu1);
-   Serial.print(" "); Serial.println(atan(kalmanfilter.ekf_tg.Xu1)*57.3);
+  // Serial.print(" "); Serial.println(kalmanfilter.myfilter.Xu1+3.8);  
+  //  Serial.print(" "); Serial.print(balancecar.pulseright);  Serial.print(" "); Serial.println(balancecar.pulseleft);
+    Serial.print(" "); Serial.print(kalmanfilter.angle);  Serial.print(" "); Serial.print(kalmanfilter.Gyro_x);   Serial.print(" "); Serial.print(kalmanfilter.q_bias); Serial.print(" "); Serial.println(kalmanfilter.angle_dot);
+  // Serial.print(" "); Serial.println(atan(kalmanfilter.ekf_tg.Xu1)*57.3);
+  // 
+  //  Serial.print(" "); Serial.print(kalmanfilter.angle); Serial.print(" "); Serial.println(pwm1);
+   // Serial.print(" "); Serial.print(lqr.theta_int);  Serial.print(" "); Serial.print(lqr.theta,8); Serial.print(" "); Serial.print(lqr.psi, 8);  Serial.print(" "); Serial.print(lqr.theta_dot); Serial.print(" "); Serial.print(lqr.psi_dot); Serial.print(" "); Serial.println(pwm2);
   delay(100); // Delay to avoid flooding Serial Monitor
 }
 
