@@ -10,10 +10,13 @@ In order to  avoid Infringement Act,this core is not for the commerce except bei
 //////////////////�ٶ�PI////////////////////
 double BalanceCar::speedpiout(double kps,double kis,double kds,int f,int b,double p0)
 {
-  float speeds = (pulseleft + pulseright) * 1.0;                                                                 //���� ����ֵ
+
+    speeds = (sum)*0.5;  
+    //float speeds = (pulseleft + pulseright) * 1.0;                                                                 //���� ����ֵ
   pulseright = pulseleft = 0;
+
                                                                       //һ�׻����˲�
-  float speeds_filter = speeds_filterold * 0.7 + speeds * 0.3;
+  speeds_filter = speeds_filterold * 0.0 + speeds * 1.0;
   speeds_filterold = speeds_filter;
   positions += speeds_filter;
   positions += f;                                                                         //ȫ���������ں�

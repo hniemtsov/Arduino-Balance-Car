@@ -34,9 +34,19 @@ void calc_pwms(double& pwm1, double& pwm2, double speedoutput, float rotationout
 	double angleoutput=0, pwm1 = 0, pwm2 = 0;
 	long sumam;
 	long count_prev = 0;
+
+#define WINDOW_SIZE 8
+
+	float buffer[WINDOW_SIZE] = { 0,0,0,0,0,0,0,0 };  // Circular buffer
+	uint8_t index = 0;          // Index of the oldest sample
+	float sum = 0;              // Rolling sum
+	float speeds_filter;
+	float speeds;
+	float positions;
+	float new_sample;
 private:
 	float speeds_filterold = 0;//ËÙ¶ÈÂË²¨
-	float positions;//Î»ÖÃ
+	
 	int turnmax = 0;                                    //Ðý×ªÊä³ö·ùÖµ
 	int turnmin = 0;                                  //Ðý×ªÊä³ö·ùÖµ
 	float turnout = 0;
@@ -44,6 +54,7 @@ private:
 	int flag2 = 0;
 	int flag3 = 0;
 	int flag4 = 0;
+
 };
 #endif
 //
